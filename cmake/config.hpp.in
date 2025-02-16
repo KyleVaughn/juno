@@ -1,0 +1,120 @@
+#pragma once
+
+//==============================================================================
+// CMake defines
+//==============================================================================
+
+// clang-format off
+// Ignore clang-tidy, since these are CMake defines
+// NOLINTBEGIN(*-macro-to-enum,readability-identifier-naming)
+
+// Enable/disable features
+#cmakedefine01 JUNO_ENABLE_ASSERTS
+#cmakedefine01 JUNO_ENABLE_FLOAT64
+
+// External tools/dependencies
+#cmakedefine01 Kokkos_ENABLE_HIP
+
+// Max log level for compile-time filtering of log messages
+#define MAX_LOG_LEVEL @JUNO_MAX_LOG_LEVEL@
+
+// NOLINTEND(*-macro-to-enum,readability-identifier-naming)
+// clang-format on
+
+//==============================================================================
+// Includes
+//==============================================================================
+
+#include <cstdint> // int8_t, int32_t
+
+//==============================================================================
+// Attributes
+//==============================================================================
+
+// Optimization
+#ifdef PURE
+#  error "PURE already defined"
+#endif
+#ifdef CONST
+#  error "CONST already defined"
+#endif
+#define PURE  [[gnu::pure]]
+#define CONST [[gnu::const]]
+
+// TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
+// https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
+#ifdef ASSUME
+#  error "ASSUME already defined"
+#endif
+#if defined(__clang__)
+#  if (__clang_major__ >= 19)
+#    define ASSUME(expr) [[assume(expr)]]
+#  else
+#    define ASSUME(expr) __builtin_assume(expr)
+#  endif
+#elif defined(__GNUC__)
+#  if (__GNUC__ >= 13)
+#    define ASSUME(expr) [[assume(expr)]] 
+#  else
+#    define ASSUME(expr)                                                                 \
+      if (expr) {                                                                        \
+      } else {                                                                           \
+        __builtin_unreachable();                                                         \
+      }
+#  endif
+#else
+#  define ASSUME(expr)
+# warning "ASSUME not defined for this compiler"
+#endif
+
+#ifdef RESTRICT
+#  error "RESTRICT already defined"
+#endif
+#define RESTRICT __restrict__
+
+// GPU 
+#ifdef HOST
+#  error "HOST already defined"
+#endif
+#ifdef DEVICE
+#  error "DEVICE already defined"
+#endif
+#ifdef HOSTDEV
+#  error "HOSTDEV already defined"
+#endif
+#if Kokkos_ENABLE_HIP
+#  define HOST    __host__
+#  define DEVICE  __device__
+#  define HOSTDEV __host__ __device__
+#else
+#  define HOST
+#  define DEVICE
+#  define HOSTDEV
+#endif
+
+//==============================================================================
+// Typedefs
+//==============================================================================
+
+// Floating point type
+#if JUNO_ENABLE_FLOAT64
+using Float = double;
+#else
+using Float = float;
+#endif
+
+// Integer type
+using Int = int32_t;
+HOSTDEV consteval auto
+intMax() noexcept -> Int
+{
+  return INT32_MAX;
+}
+
+//==============================================================================
+// Misc.
+//==============================================================================
+
+// For static_asserts which are always false.
+template <class... T>
+constexpr bool always_false = false;

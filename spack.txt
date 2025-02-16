@@ -1,0 +1,11 @@
+Install rocm
+https://rocm.docs.amd.com/projects/install-on-linux/en/latest/index.html
+
+spack env create juno
+spack env activate -p juno
+spack add cmake@3.31
+spack add llvm@19
+spack add valgrind
+spack concretize
+spack install
+spack compiler find

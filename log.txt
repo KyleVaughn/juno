@@ -1,0 +1,180 @@
+===============================================================================
+Build
+===============================================================================
+
+CMake 
+  - Use CMake as the build system. 
+    - It's widely supported, easy to use, and is the de facto standard for C++ 
+      projects.
+  - Version 3.31
+    - Not much reason other than it's the latest version at the time of writing.
+    - Need at least 3.21 for HIP_STANDARD and 3.23 for various CUDA features.
+
+#Unit tests
+#  - Test for expected behavior, not for unexpected behavior.
+#    - The set of expected behaviors is much smaller than the set of unexpected 
+#      behaviors.
+#  - Use our own test macros. 
+#    - We only need simple behavior, so we don't need a full testing framework.
+#
+===============================================================================
+Dependencies
+===============================================================================
+
+clang-format
+  - Use clang-format to enforce a consistent code style.
+    - Consistent style helps make code easier to read and maintain.
+    - Being able to immediately see structure or that something is a variable, 
+      function, etc. is very helpful.
+  - We use LLVM style with a few modifications.
+  - 90 column limit. The old 80 column limit is too restrictive, but 100 is 
+    excessive for users on laptops or smaller monitors.
+  - General style:
+    - variable names: snake_case
+    - function names: camelCase
+    - class names: PascalCase
+    - macros: ALL_CAPS
+    - private member variables: _variableName
+
+clang-tidy
+  - Use clang-tidy to ensure code quality and to catch potential bugs.
+  - Enabled checks:
+    - bugprone-* Checks that target bug-prone code constructs.
+    - cert-* Checks related to CERT Secure Coding Guidelines.
+    - clang-analyzer-* Clang Static Analyzer checks.
+    - cppcoreguidelines-* Checks related to C++ Core Guidelines.
+    - llvm-* Checks related to the LLVM coding conventions.
+    - misc-* Checks that didn’t have a better category. 
+    - modernize-* Checks that advocate usage of modern language constructs.
+    - mpi-* Checks related to MPI (Message Passing Interface).
+    - openmp-* Checks related to OpenMP API.
+    - performance-* Checks that target performance-related issues.
+    - portability-* Checks that target portability-related issues. 
+    - readability-* Checks that target readability-related issues.
+  - Disabled checks:
+    - *-avoid-c-arrays: Using C arrays in some circumstances is acceptable.
+    - *-magic-numbers: Magic numbers are acceptable in some circumstances.
+    - bugprone-easily-swappable-parameters: Subjective.
+    - clang-analyzer-osx*: We don't target macOS.
+    - cppcoreguidelines-macro-usage: Macros for related to configuration are acceptable.
+    - cppcoreguidelines-pro-bounds-array-to-pointer-decay: Can be perfectly safe 
+      and performant.
+    - cppcoreguidelines-pro-bounds-pointer-arithmetic:  Can be perfectly safe and 
+      performant
+    - cppcoreguidelines-pro-type-vararg: snprintf, etc.
+    - llvm-header-guard: We use #pragma once.
+    - modernize-use-ranges: Not while they are still lacking in performance.
+    - modernize-use-std-print: Not supported by all compilers of interest.
+    - readability-identifer-length: Makes doing math impossible. x + y = z is invalid.
+
+#OpenMP
+#  - Use OpenMP for multi-threading. It's widely supported and easy to use.
+#  - Kokkos can handle common multi-threaded operations using OpenMP as the backend.
+#
+#Kokkos
+#  - Currently the best option for performance portability with GPUs.
+#  - Always build Kokkos instead of using a system-installed version to ensure compiler 
+#    compatability and correct configuration. Also because Kokkos doesn't take long to 
+#    build.
+#
+#Valgrind
+#  - Use Valgrind to check for memory leaks and other memory-related issues for CPU.
+#
+#===============================================================================
+#Configuration
+#===============================================================================
+#
+#C++23 standard
+#  - The latest standard with (almost) full support.
+#  - We may have to resort to C++20 for CUDA. nvcc doesn't support C++23 yet.
+#  - We would like to use the following language features:
+#    - #elifdef
+#    - Multidimensional subscript operator [i,j,k]
+#    - #warning
+#    - [[assume(expr)]]
+#  - We would like to use the following library features:
+#    - stacktrace library
+#    - std::string_view/string::contains
+#    - std::mdspan (thanks Kokkos!)
+#
+#General warnings
+#  -Wall: The standard, bare minimum set of warnings.
+#  -Wextra: Extra warnings that are generally useful.
+#  -Wcast-align: Warn whenever a pointer is cast such that the required alignment of the 
+#    target is increased.
+#  -Wcast-qual: Warn whenever a pointer is cast so as to remove a type qualifier from the
+#    target type.
+#  -Wconversion: Warn for implicit conversions that may alter a value.
+#  -Wdouble-promotion: Warn if float is implicit promoted to double.
+#  -Wfloat-equal: Warn if floating point values are compared for equality.
+#  -Wimplicit-fallthrough: Warn if a switch case falls through.
+#  -Wmissing-noreturn: Warn about functions which might be candidates for attribute noreturn.
+#  -Wnon-virtual-dtor: Warn when a class with virtual functions has a non-virtual destructor.
+#  -Wshadow: Warn whenever a local variable shadows another local variable.
+#  -Wunused: Warn whenever a variable is unused.
+#  -Wvla: Warn if variable length array is used.
+#  -Wzero-as-null-pointer-constant: Warn if zero is used as a null pointer constant.
+#  -Werror: Treat warnings as errors.
+#  -Wold-style-cast: Warn for C-style casts.
+#  -pedantic: Issue all the warnings demanded by strict ISO C and ISO C++.
+#
+#Compiler-specific warnings
+#  -Wsuggest-attribute=const: Suggest that a function be marked as const (gnu::const).
+#  -Wsuggest-attribute=pure: Suggest that a function be marked as pure (gnu::pure).
+#  -Wsuggest-attribute=noreturn: Suggest that a function be marked as noreturn. 
+#  -Wunreachable-code: Warn if the compiler detects that code will never be executed.
+#  -Wconditional-uninitialized: Warn if a variable is used without being initialized.
+#  -Wheader-hygiene: Warn if a header is included that is not needed.
+#  -Woverriding-method-mismatch: Warn if a method is overridden with a different signature.
+#  -Wrange-loop-analysis: Loop related warnings. 
+#  -Wreserved-identifier: Warn if a reserved identifier is used.
+#  -Wshadow-all: Warn whenever a local variable shadows another variable.
+#  -Wshift-sign-overflow: Warn if a shift operation caused the sign of the result to change.
+#  -Wtautological-compare: Warn if a comparison is always true or always false.
+#  -Wunaligned-access: Warn of unaligned memory access to aligned types.
+#  -Wunneeded-member-function: Warn if a member function is not needed.
+#  -Wundef: Warn if an undefined identifier is used in an #if directive.
+#  -Wvector-conversion: Warn if a vector conversion is problematic. 
+#
+#Optimization
+# -ffast-math: Allow the compiler to optimize floating point operations as much as possible.
+#  In general, we should not rely on strict IEEE compliance. We don't care about infinities,
+#  NaNs, signed zeroes, etc. We just want the fastest code possible without incurring too 
+#  much floating point error. We should explicitly handle any edge cases that we care about
+#  order of operations, such as in computing dot products.
+# -march=native: Generate code for the host machine's architecture.
+#
+#Debug
+# -g: Generate debug information.
+# -fsanitize=address: Enable AddressSanitizer.
+# -fsanitize=memory: Enable MemorySanitizer.
+# -fsanitize=undefined: Enable UndefinedBehaviorSanitizer.
+# -fno-omit-frame-pointer: Don't omit frame pointers for better stack traces.
+#
+#===============================================================================
+#Design
+#===============================================================================
+#
+#Assert/Assume
+#  - Roll our own assert macro that can be used regardless of whether NDEBUG is defined.
+#  - Use C++23 [[assume(expr)]] to provide optimization hints to the compiler.
+#  - Use ASSERT_ASSUME(expr) to provide a hint to assert that the expression is true when
+#    assertions are enabled, and to assume that the expression is true when assertions are
+#    disabled.
+#
+#Logging
+#  - Use a logger to handle debug, info, warning, and error messages.
+#  - Use compile-time and run-time configuration to control logging behavior.
+#  - Colorize output when logging to a terminal to make it easier to read.
+#  - Use the logger to exit the program when an error occurs (configurable).
+#
+#Settings
+#
+#Prefer header-only implementations
+#  - Increases compile times, but allows for transformations that would not be possible with
+#    separate compilation (e.g. inlining, constant propagation, etc.)
+#
+#
+#benchmark
+#libquadmath
+#gcov
