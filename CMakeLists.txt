@@ -151,13 +151,6 @@ endif()
 # Flags
 #===============================================================================
 
-# If using clang, ensure libomp is linked properly.
-# Linking Kokkos::kokkos does not link libomp properly. 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  get_filename_component(LIBOMP_PATH ${OpenMP_omp_LIBRARY} DIRECTORY)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${LIBOMP_PATH}")
-endif()
-
 include(CheckCXXCompilerFlag)
 macro(juno_add_cxx_compiler_flag FLAG)
   string(REGEX REPLACE "-" "" SFLAG ${FLAG})
@@ -222,9 +215,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -flto")
 # Sanitizers (debug only)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=memory,address,undefined -fno-omit-frame-pointer")
 
-# if using clang, set the default C++ standard library to libc++
+
+# If using clang, ensure libomp is linked properly and
+# set the default C++ standard library to libc++
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  # Kokkos does not specify the rpath for libomp, so we need to do it manually, or
+  # risk a user setting LD_LIBRARY_PATH.
+  get_filename_component(LIBOMP_PATH ${OpenMP_omp_LIBRARY} DIRECTORY)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${LIBOMP_PATH}")
 endif()
 
 #===============================================================================
