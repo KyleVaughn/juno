@@ -13,7 +13,9 @@
 #cmakedefine01 JUNO_ENABLE_FLOAT64
 
 // External tools/dependencies
-#cmakedefine01 Kokkos_ENABLE_HIP
+#cmakedefine01 JUNO_USE_GPU
+#cmakedefine01 JUNO_USE_CUDA
+#cmakedefine01 JUNO_USE_HIP
 
 // Max log level for compile-time filtering of log messages
 #define MAX_LOG_LEVEL @JUNO_MAX_LOG_LEVEL@
@@ -30,16 +32,6 @@
 //==============================================================================
 // Attributes
 //==============================================================================
-
-// Optimization
-#ifdef PURE
-#  error "PURE already defined"
-#endif
-#ifdef CONST
-#  error "CONST already defined"
-#endif
-#define PURE  [[gnu::pure]]
-#define CONST [[gnu::const]]
 
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
@@ -63,8 +55,8 @@
       }
 #  endif
 #else
-#  define ASSUME(expr)
-# warning "ASSUME not defined for this compiler"
+# define ASSUME(expr)
+# error "ASSUME not defined for this compiler"
 #endif
 
 #ifdef RESTRICT
@@ -82,10 +74,30 @@
 #ifdef HOSTDEV
 #  error "HOSTDEV already defined"
 #endif
-#if Kokkos_ENABLE_HIP
+#ifdef COMPILING_DEVICE
+#  error "COMPILING_DEVICE already defined"
+#endif
+#if JUNO_USE_GPU
 #  define HOST    __host__
 #  define DEVICE  __device__
 #  define HOSTDEV __host__ __device__
+# if JUNO_USE_CUDA
+#   include <cuda_runtime.h>
+#   if defined(__CUDA_ARCH__)
+#     define COMPILING_DEVICE 1 
+#   else
+#     define COMPILING_DEVICE 0
+#   endif
+# elif JUNO_USE_HIP
+#   include <hip/hip_runtime.h>
+#   if defined(__HIP_DEVICE_COMPILE__)
+#     define COMPILING_DEVICE 1
+#   else
+#     define COMPILING_DEVICE 0
+#   endif
+# else
+#   error "GPU enabled but no GPU backend specified"
+# endif
 #else
 #  define HOST
 #  define DEVICE

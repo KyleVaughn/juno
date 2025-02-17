@@ -20,6 +20,7 @@ cmake -S . -B $BUILD_DIR \
       -DKokkos_ENABLE_DEBUG=ON \
       -DKokkos_ENABLE_DEBUG_BOUNDS_CHECK=ON \
       -DKokkos_ENABLE_HIP_MULTIPLE_KERNEL_INSTANTIATIONS=ON \
-      -DKokkos_ARCH_NATIVE=ON \
+      -DKokkos_ARCH_AMD_GFX1100=ON \
+      -DKokkos_ARCH_ZEN4=ON \
 && cmake --build $BUILD_DIR -j \
 && ctest --test-dir $BUILD_DIR

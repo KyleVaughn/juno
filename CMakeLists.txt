@@ -37,10 +37,10 @@ option(JUNO_BUILD_TESTS "Build tests" ON)
 # Enable assertions. This option enables JUNO_ASSERT*(condition) macros, which
 # are evaluated regardless of the build type, unlike the standard assert macro
 # which is only evaluated if NDEBUG is not defined.
-option(JUNO_ENABLE_ASSERTS "Enable assertions" OFF)
+option(JUNO_ENABLE_ASSERTS "Enable assertions" ON)
 
 # Enable fast math optimizations.
-option(JUNO_ENABLE_FASTMATH "Enable fast math optimizations" OFF)
+option(JUNO_ENABLE_FASTMATH "Enable fast math optimizations" ON)
 
 # External tools/dependencies
 #-----------------------------------------------------------------------------
@@ -52,6 +52,10 @@ option(JUNO_USE_CLANG_FORMAT "Use clang-format" ON)
 # Use clang-tidy for static analysis. Enable clang-tidy on all targets.
 option(JUNO_USE_CLANG_TIDY "Use clang-tidy" ON)
 
+# Use CUDA for GPU acceleration.
+# NOT CURRENTLY SUPPORTED
+option(JUNO_USE_CUDA "Use CUDA" OFF)
+
 # Use HIP for GPU acceleration.
 option(JUNO_USE_HIP "Use HIP" OFF)
 
@@ -61,6 +65,13 @@ option(JUNO_USE_VALGRIND "Use valgrind" OFF)
 #===============================================================================
 # Basic CMake configuration
 #===============================================================================
+
+# Set JUNO_USE_GPU if using HIP or CUDA
+if (JUNO_USE_HIP OR JUNO_USE_CUDA)
+  set(JUNO_USE_GPU ON)
+else()
+  set(JUNO_USE_GPU OFF)
+endif()
 
 # Disable in-source builds
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
@@ -96,14 +107,14 @@ else()
 endif()
 message(STATUS "JUNO_MAX_LOG_LEVEL: ${JUNO_MAX_LOG_LEVEL}")
 
-# RPATH handling    
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling    
-set(CMAKE_SKIP_BUILD_RPATH FALSE)    
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)    
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)    
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)    
-if("${isSystemDir}" STREQUAL "-1")    
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")    
+# RPATH handling
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
 endif()
 
 include(GNUInstallDirs)
@@ -180,9 +191,7 @@ juno_add_cxx_compiler_flag("-Wold-style-cast")
 juno_add_cxx_compiler_flag("-pedantic")
 
 # Set potentially compiler-specific warning flags
-juno_add_cxx_compiler_flag("-Wsuggest-attribute=const")
 juno_add_cxx_compiler_flag("-Wsuggest-attribute=noreturn")
-juno_add_cxx_compiler_flag("-Wsuggest-attribute=pure")
 juno_add_cxx_compiler_flag("-Wunreachable-code")
 juno_add_cxx_compiler_flag("-Wconditional-uninitialized")
 juno_add_cxx_compiler_flag("-Wheader-hygiene")
@@ -197,7 +206,6 @@ juno_add_cxx_compiler_flag("-Wunaligned-access")
 juno_add_cxx_compiler_flag("-Wunneeded-member-function")
 juno_add_cxx_compiler_flag("-Wundef")
 juno_add_cxx_compiler_flag("-Wvector-conversion")
-
 
 # Math optimizations
 if (JUNO_ENABLE_FASTMATH)
@@ -215,11 +223,21 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -flto")
 # Sanitizers (debug only)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=memory,address,undefined -fno-omit-frame-pointer")
 
+# Enable OpenMP
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 
-# If using clang, ensure libomp is linked properly and
-# set the default C++ standard library to libc++
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+# Set compiler-specific flags
+if (JUNO_USE_HIP)
+  set(CMAKE_HIP_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_HIP_STANDARD ${JUNO_CXX_STANDARD})
+  set(CMAKE_HIP_STANDARD_REQUIRED ON)
+elseif (JUNO_USE_CUDA)
+  # NOT CURRENTLY SUPPORTED
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # Would love to use Clang's C++ stdlib, but Kokkos does not support it
+  #### Set the default C++ standard library to libc++
+  #### set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   # Kokkos does not specify the rpath for libomp, so we need to do it manually, or
   # risk a user setting LD_LIBRARY_PATH.
   get_filename_component(LIBOMP_PATH ${OpenMP_omp_LIBRARY} DIRECTORY)
@@ -275,6 +293,9 @@ configure_file(
 # Kokkos
 target_link_libraries(juno PUBLIC Kokkos::kokkos)
 target_include_directories(juno SYSTEM PUBLIC ${Kokkos_INCLUDE_DIRS})
+
+# OpenMP
+target_link_libraries(juno PUBLIC OpenMP::OpenMP_CXX)
 
 # clang-format
 if (JUNO_USE_CLANG_FORMAT)

@@ -61,7 +61,7 @@ extern char const * const buffer_end; // 1 past the last valid character in the 
 // Functions
 //==============================================================================
 
-PURE constexpr auto
+constexpr auto
 getLastMessage() noexcept -> std::string_view
 {
   return {buffer};

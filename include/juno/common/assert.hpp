@@ -2,8 +2,7 @@
 
 #include <juno/config.hpp>
 
-#include <cstdio>  // printf
-#include <cstdlib> // exit
+#include <Kokkos_Core.hpp>  // abort, printf
 
 //==============================================================================
 // Assertions
@@ -35,19 +34,19 @@
 namespace juno
 {
 
-[[noreturn]] inline void
+[[noreturn]] HOSTDEV inline void
 failedAssert(char const * const file, int const line, char const * const msg) noexcept
 {
-  printf("Assertion failed: %s:%d: %s\n", file, line, msg);
-  exit(1);
+  Kokkos::printf("Assertion failed: %s:%d: %s\n", file, line, msg);
+  Kokkos::abort("Assertion failed");
 }
 
-[[noreturn]] inline void
+[[noreturn]] HOSTDEV inline void
 failedAssertNear(char const * const file, int const line, char const * const a,
                  char const * const b, char const * const eps) noexcept
 {
-  printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
-  exit(1);
+  Kokkos::printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
+  Kokkos::abort("Assertion failed");
 }
 
 } // namespace juno
@@ -63,7 +62,7 @@ failedAssertNear(char const * const file, int const line, char const * const a,
       auto const b_eval = (b);                                                           \
       auto const diff_eval = a_eval < b_eval ? b_eval - a_eval : a_eval - b_eval;        \
       if (diff_eval > (eps)) {                                                           \
-        juno::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                        \
+        juno::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                         \
       }                                                                                  \
     }
 
