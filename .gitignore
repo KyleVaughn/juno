@@ -1,2 +1,5 @@
 # Build directory
 build/
+
+# config files
+include/juno/config.hpp
