@@ -96,6 +96,18 @@ else()
 endif()
 message(STATUS "JUNO_MAX_LOG_LEVEL: ${JUNO_MAX_LOG_LEVEL}")
 
+# RPATH handling    
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling    
+set(CMAKE_SKIP_BUILD_RPATH FALSE)    
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)    
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)    
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)    
+if("${isSystemDir}" STREQUAL "-1")    
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")    
+endif()
+
+include(GNUInstallDirs)
+
 #===============================================================================
 # Find dependencies
 #===============================================================================
@@ -111,7 +123,7 @@ set(Kokkos_INCLUDE_DIRS
 )
 
 # OpenMP
-find_package(OpenMP)    
+find_package(OpenMP REQUIRED)
 
 # clang-format
 if (JUNO_USE_CLANG_FORMAT)
@@ -138,6 +150,13 @@ endif()
 #===============================================================================
 # Flags
 #===============================================================================
+
+# If using clang, ensure libomp is linked properly.
+# Linking Kokkos::kokkos does not link libomp properly. 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  get_filename_component(LIBOMP_PATH ${OpenMP_omp_LIBRARY} DIRECTORY)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${LIBOMP_PATH}")
+endif()
 
 include(CheckCXXCompilerFlag)
 macro(juno_add_cxx_compiler_flag FLAG)
@@ -203,6 +222,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -flto")
 # Sanitizers (debug only)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=memory,address,undefined -fno-omit-frame-pointer")
 
+# if using clang, set the default C++ standard library to libc++
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
 #===============================================================================
 # Create libjuno target
 #===============================================================================
@@ -252,11 +276,6 @@ configure_file(
 # Kokkos
 target_link_libraries(juno PUBLIC Kokkos::kokkos)
 target_include_directories(juno SYSTEM PUBLIC ${Kokkos_INCLUDE_DIRS})
-
-# OpenMP
-target_link_libraries(juno PUBLIC OpenMP::OpenMP_CXX)    
-target_include_directories(juno SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")    
-
 
 # clang-format
 if (JUNO_USE_CLANG_FORMAT)

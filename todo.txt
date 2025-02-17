@@ -1,0 +1,17 @@
+spack sets cmake prefix, which screws up the rpath linking
+
+Use C++ lib for clang
+
+
+BUILD
+- unit tests
+
+- Kokkos kernel bandwidth is ass compared to hip...
+
+- Ensure HIP memory space/kokkos works if enabled
+
+- Config Kokkos in config.hpp 
+
+- Use clang stdlib when using clang
+
+go through clang and gcc options for warnings and optimizations
