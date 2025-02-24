@@ -43,7 +43,7 @@ inline constexpr int32_t debug = 4; // errors, warnings, info and debug
 //==============================================================================
 
 // Suppress warnings for non-const global variables, since this is a global
-// logger 
+// logger
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 extern int32_t & level;
