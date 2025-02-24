@@ -21,8 +21,8 @@ namespace um2
 // Overview:
 // The closed-form solution for the cubic equation is prone to numerical issues.
 // Instead, we use Newton-Raphson iteration to find the smallest real root, then
-// deflate the polynomial by dividing by (x - root). Then, we solve the quadratic
-// equation that results from the deflation.
+// deflate the polynomial by dividing by (x - root). Then, we solve the
+// quadratic equation that results from the deflation.
 
 // We want exact float comparison here.
 // NOLINTBEGIN(clang-diagnostic-float-equal, cppcoreguidelines-*)

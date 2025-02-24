@@ -121,7 +121,8 @@ struct IsSIMDVec<Vec<D, T>> {
   static constexpr bool value = is_simd_vec<D, T>;
 };
 
-// Align if power of 2 and arithmetic, or if the data otherwise maps to a SIMD type
+// Align if power of 2 and arithmetic, or if the data otherwise maps to a SIMD
+// type
 template <Int D, class T>
 static consteval auto
 vecAlignment() noexcept -> Int
@@ -292,8 +293,8 @@ public:
   // eps2 is the squared distance below which two points are considered to be
   // equal.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isApprox(Vec<D, T> const & v,
-           T const & eps2 = epsDistance2<T>()) const noexcept -> bool;
+  isApprox(Vec<D, T> const & v, T const & eps2 = epsDistance2<T>()) const noexcept
+      -> bool;
 
 }; // class Vec
 

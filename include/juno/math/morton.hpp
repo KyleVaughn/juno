@@ -29,11 +29,11 @@
 // supported (such as on GPU), then we emulate the BMI2 intrinsics using a
 // portable algorithm.
 
-#if defined(__BMI2__) 
+#if defined(__BMI2__)
 // Only compile fallbacks for device code
 #  define BMI2_SUPPORTED 1
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
-#  if COMPILING_DEVICE 
+#  if COMPILING_DEVICE
 #    define BMI2_HOSTDEV DEVICE
 #  endif
 #else
@@ -387,7 +387,8 @@ mortonEncode(T const x, T const y, T const z) noexcept -> U
   return mortonEncode(x_m, y_m, z_m);
 }
 
-// Decode U morton code to a 3D floating point coordinate in [0,1] x [0,1] x [0,1]
+// Decode U morton code to a 3D floating point coordinate in
+// [0,1] x [0,1] x [0,1]
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV void
 mortonDecode(U const morton, T & x, T & y, T & z) noexcept

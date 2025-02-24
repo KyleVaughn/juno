@@ -2,7 +2,7 @@
 
 #include <juno/config.hpp>
 
-#include <Kokkos_Core.hpp>  // abort, printf
+#include <Kokkos_Core.hpp> // abort, printf
 
 //==============================================================================
 // Assertions
@@ -12,8 +12,8 @@
 //  If JUNO_ENABLE_ASSERTS is 0, ASSERT does nothing and expr is not evaluated.
 //
 // ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.
-//  If JUNO_ENABLE_ASSERTS is 0, ASSERT_NEAR does nothing and a, b, and eps are not
-//  evaluated.
+//  If JUNO_ENABLE_ASSERTS is 0, ASSERT_NEAR does nothing and a, b, and eps are
+//  not evaluated.
 //
 // ASSERT_ASSUME(expr) - Asserts that expr is true, with varying effects.
 //  If JUNO_ENABLE_ASSERTS is 1, this is equivalent to ASSERT(expr).
@@ -45,25 +45,26 @@ failedAssert(char const * const file, int const line, char const * const msg) no
 failedAssertNear(char const * const file, int const line, char const * const a,
                  char const * const b, char const * const eps) noexcept
 {
-  Kokkos::printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
+  Kokkos::printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b,
+                 eps);
   Kokkos::abort("Assertion failed");
 }
 
 } // namespace juno
 
-#  define ASSERT(cond)                                                                  \
-    if (!(cond)) {                                                                      \
-      juno::failedAssert(__FILE__, __LINE__, #cond);                                    \
+#  define ASSERT(cond)                                                                   \
+    if (!(cond)) {                                                                       \
+      juno::failedAssert(__FILE__, __LINE__, #cond);                                     \
     }
 
-#  define ASSERT_NEAR(a, b, eps)                                                        \
-    {                                                                                   \
-      auto const a_eval = (a);                                                          \
-      auto const b_eval = (b);                                                          \
-      auto const diff_eval = a_eval < b_eval ? b_eval - a_eval : a_eval - b_eval;       \
-      if (diff_eval > (eps)) {                                                          \
-        juno::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                       \
-      }                                                                                 \
+#  define ASSERT_NEAR(a, b, eps)                                                         \
+    {                                                                                    \
+      auto const a_eval = (a);                                                           \
+      auto const b_eval = (b);                                                           \
+      auto const diff_eval = a_eval < b_eval ? b_eval - a_eval : a_eval - b_eval;        \
+      if (diff_eval > (eps)) {                                                           \
+        juno::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                        \
+      }                                                                                  \
     }
 
 #  define ASSERT_ASSUME(expr) ASSERT(expr)

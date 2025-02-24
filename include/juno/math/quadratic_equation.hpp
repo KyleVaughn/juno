@@ -19,7 +19,8 @@ namespace um2
 //=============================================================================
 // Solves the quadratic equation a*x^2 + b*x + c = 0.
 // Returns 1e16 for roots that are not real.
-// We use 1e16 instead of NaN, since we want consistent behavior using -ffast-math.
+// We use 1e16 instead of NaN, since we want consistent behavior using
+// -ffast-math.
 //
 // References:
 // The Ins and Outs of Solving Quadratic Equations with Ting-Point Arithmetic

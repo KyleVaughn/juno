@@ -13,8 +13,8 @@
 #include <random>
 
 // References:
-// The Ins and Outs of Solving Quadratic Equations with floating-Point Arithmetic
-// by Frédéric Goualard
+// The Ins and Outs of Solving Quadratic Equations with floating-Point
+// Arithmetic by Frédéric Goualard
 
 // Check the degenerate cases
 // Table 2, pg 15 in the reference

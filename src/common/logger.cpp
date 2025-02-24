@@ -18,8 +18,8 @@ namespace juno::logger
 // Initialize global variables
 //==============================================================================
 
-// Suppress warnings for non-const global variables, since this is a global logger
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+// Suppress warnings for non-const global variables, since this is a global
+// logger NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 int32_t & level = juno::settings::logger::level;
 bool & timestamped = juno::settings::logger::timestamped;
@@ -54,9 +54,10 @@ reset() noexcept
 //==============================================================================
 
 // When we don't use assertions, suppress warnings for unused variables
-// It's a catch-22, since what are we supposed to do when we aren't using assertions,
-// but the log function failed? We can't log it, since the log is broken. So we just
-// do nothing and hope for the best. The dangers of Release mode.
+// It's a catch-22, since what are we supposed to do when we aren't using
+// assertions, but the log function failed? We can't log it, since the log is
+// broken. So we just do nothing and hope for the best. The dangers of Release
+// mode.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 // NOLINTBEGIN(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
@@ -297,12 +298,12 @@ addColor(int32_t const msg_level, char * buffer_pos) noexcept -> char *
       buffer_pos[5] = '5';
       break;
     default: // NO COLOR
-      // False positive, since we -7 then +7 in the next line, so we never
-      // actually access buffer_pos[< 0]
-      #pragma GCC diagnostic push
-      #pragma GCC diagnostic ignored "-Warray-bounds"
+// False positive, since we -7 then +7 in the next line, so we never
+// actually access buffer_pos[< 0]
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
       buffer_pos -= 7;
-      #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
       break;
     }
     buffer_pos += 7;
