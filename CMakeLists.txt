@@ -7,7 +7,7 @@ project(
   LANGUAGES CXX)
 
 #===============================================================================
-# CMakeLists.txt Contents
+# Contents
 #===============================================================================
 # 1. Options
 # 2. Basic CMake configuration
@@ -25,8 +25,8 @@ project(
 # Build
 #-------------------------------------------------------------------------------
 
-# Build JUNO as a shared library (ON) or static library (OFF).
-option(JUNO_BUILD_SHARED_LIB "Build JUNO as a shared library" OFF)
+# Build juno as a shared library (ON) or static library (OFF).
+option(JUNO_BUILD_SHARED_LIB "Build juno as a shared library" OFF)
 
 # Build tests. These are unit tests that are used to verify correctness.
 option(JUNO_BUILD_TESTS "Build tests" ON)
@@ -34,13 +34,17 @@ option(JUNO_BUILD_TESTS "Build tests" ON)
 # Features
 #------------------------------------------------------------------------------
 
-# Enable assertions. This option enables JUNO_ASSERT*(condition) macros, which
-# are evaluated regardless of the build type, unlike the standard assert macro
-# which is only evaluated if NDEBUG is not defined.
-option(JUNO_ENABLE_ASSERTS "Enable assertions" ON)
+# Enable assertions. This option enables the JUNO_ASSERT*(condition) macros, 
+# which are evaluated regardless of the build type, unlike the standard assert 
+# macro which is only evaluated if NDEBUG is not defined.
+option(JUNO_ENABLE_ASSERTS "Enable assertions" OFF)
 
 # Enable fast math optimizations.
 option(JUNO_ENABLE_FASTMATH "Enable fast math optimizations" ON)
+
+# Set the Float type to 64-bit (double) instead of 32-bit (float). This option
+# determines the precision of the floating point numbers used in juno.    
+option(JUNO_ENABLE_FLOAT64 "Enable 64-bit Float" OFF)
 
 # External tools/dependencies
 #-----------------------------------------------------------------------------
@@ -52,15 +56,11 @@ option(JUNO_USE_CLANG_FORMAT "Use clang-format" ON)
 # Use clang-tidy for static analysis. Enable clang-tidy on all targets.
 option(JUNO_USE_CLANG_TIDY "Use clang-tidy" ON)
 
-# Use CUDA for GPU acceleration.
-# NOT CURRENTLY SUPPORTED
+# Use CUDA for GPU acceleration. (NOT CURRENTLY SUPPORTED)
 option(JUNO_USE_CUDA "Use CUDA" OFF)
 
 # Use HIP for GPU acceleration.
 option(JUNO_USE_HIP "Use HIP" OFF)
-
-# Use valgrind for memory checking. Creates a valgrind_X target for each test.
-option(JUNO_USE_VALGRIND "Use valgrind" OFF)
 
 #===============================================================================
 # Basic CMake configuration
@@ -153,15 +153,11 @@ if (JUNO_USE_HIP)
   enable_language(HIP)
 endif()
 
-# valgrind
-if (JUNO_USE_VALGRIND)
-  find_program(VALGRIND valgrind REQUIRED)
-endif()
-
 #===============================================================================
 # Flags
 #===============================================================================
 
+# If the compiler supports the flag, use it
 include(CheckCXXCompilerFlag)
 macro(juno_add_cxx_compiler_flag FLAG)
   string(REGEX REPLACE "-" "" SFLAG ${FLAG})
@@ -209,12 +205,20 @@ juno_add_cxx_compiler_flag("-Wvector-conversion")
 
 # Math optimizations
 if (JUNO_ENABLE_FASTMATH)
-  juno_add_cxx_compiler_flag("-ffast-math")
+  # In addition to the flags below, fast math enables:
+  # -fassociative-math: (x + y) - x  == y, etc.
+  # -freciprocal-math: (x/y) == x * (1/y)
+  # -funsafe-math-optimizations: sqrt(x)*sqrt(y) = sqrt(x*y), etc
+  juno_add_cxx_compiler_flag("-Ofast")
 else()
-  juno_add_cxx_compiler_flag("-fno-math-errno")
-  juno_add_cxx_compiler_flag("-fno-trapping-math")
+  juno_add_cxx_compiler_flag("-O3")
+  juno_add_cxx_compiler_flag("-ffinite-math-only")
   juno_add_cxx_compiler_flag("-fno-signed-zeros")
-  juno_add_cxx_compiler_flag("-fno-signaling-nans")
+  juno_add_cxx_compiler_flag("-fno-trapping-math")
+  juno_add_cxx_compiler_flag("-fno-math-errno")
+  juno_add_cxx_compiler_flag("-fno-rounding-math")
+  juno_add_cxx_compiler_flag("-fpp-contract=fast")
+  juno_add_cxx_compiler_flag("-fexcess-precision=fast")
 endif()
 
 # Native architecture/Link-time optimization
@@ -224,6 +228,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -flto")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=memory,address,undefined -fno-omit-frame-pointer")
 
 # Enable OpenMP
+# Add flags here, so they are transferred to GPU language 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 
@@ -235,9 +240,9 @@ if (JUNO_USE_HIP)
 elseif (JUNO_USE_CUDA)
   # NOT CURRENTLY SUPPORTED
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # Would love to use Clang's C++ stdlib, but Kokkos does not support it
-  #### Set the default C++ standard library to libc++
-  #### set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  # Would love to use Clang's C++ stdlib, but Kokkos does not play well
+  ## Set the default C++ standard library to libc++
+  ## set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   # Kokkos does not specify the rpath for libomp, so we need to do it manually, or
   # risk a user setting LD_LIBRARY_PATH.
   get_filename_component(LIBOMP_PATH ${OpenMP_omp_LIBRARY} DIRECTORY)
@@ -338,9 +343,10 @@ endif()
 if (JUNO_USE_CLANG_TIDY)
   # Macro for running clang-tidy on the given target
   macro(set_clang_tidy_properties TIDY_TARGET)
-    set_target_properties(${TIDY_TARGET} PROPERTIES
-            CXX_CLANG_TIDY
-            "clang-tidy;--extra-arg=-Wno-unknown-warning-option;--extra-arg=-Wno-ignored-optimization-argument")
+    set_target_properties(
+      ${TIDY_TARGET} PROPERTIES
+      CXX_CLANG_TIDY
+      "clang-tidy;--extra-arg=-Wno-unknown-warning-option;--extra-arg=-Wno-ignored-optimization-argument")
   endmacro()
   set_clang_tidy_properties(juno)
 endif()

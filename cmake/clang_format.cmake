@@ -1,11 +1,10 @@
 # If FIX is set, the formatter will fix the files in place.
 # Otherwise, it will only check them.
+set(flag --output-replacements-xml)
+set(args OUTPUT_VARIABLE output)
 if(FIX)
   set(flag -i)
   set(args "")
-else
-  set(flag --output-replacements-xml)
-  set(args OUTPUT_VARIABLE output)
 endif()
 
 file(GLOB_RECURSE files ${PATTERNS})

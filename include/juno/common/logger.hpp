@@ -72,6 +72,8 @@ void
 reset() noexcept;
 
 // Write types to the buffer
+// This is templated and can be specialized so that any type can be written
+// to the buffer. Specializations for basic types are in logger.cpp
 template <class T>
 auto
 toBuffer(char * buffer_pos, T const & value) noexcept -> char *;
@@ -97,11 +99,11 @@ addColor(int32_t msg_level, char * buffer_pos) noexcept -> char *;
 auto
 addLevel(int32_t msg_level, char * buffer_pos) noexcept -> char *;
 
-// Set the preamble of the message
+// Set the preamble of the message (color, timestamp, and level)
 auto
 setPreamble(int32_t msg_level) noexcept -> char *;
 
-// Set the postamble of the message
+// Set the postamble of the message (reset color and null char)
 void
 setPostamble(char * buffer_pos) noexcept;
 

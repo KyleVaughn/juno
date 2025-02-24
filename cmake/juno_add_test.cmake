@@ -25,13 +25,4 @@ macro(juno_add_test FILENAME)
     set_hip_properties(${TESTNAME} ${FILENAME})    
   endif()
 
-  if (JUNO_USE_VALGRIND)
-    add_test(NAME valgrind_${TESTNAME}
-      COMMAND valgrind
-        --error-exitcode=1
-        --tool=memcheck
-        --track-origins=yes
-        --leak-check=full
-        $<TARGET_FILE:${TESTNAME}>)
-  endif()
 endmacro()

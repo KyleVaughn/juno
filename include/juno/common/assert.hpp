@@ -51,19 +51,19 @@ failedAssertNear(char const * const file, int const line, char const * const a,
 
 } // namespace juno
 
-#  define ASSERT(cond)                                                                   \
-    if (!(cond)) {                                                                       \
-      juno::failedAssert(__FILE__, __LINE__, #cond);                                      \
+#  define ASSERT(cond)                                                                  \
+    if (!(cond)) {                                                                      \
+      juno::failedAssert(__FILE__, __LINE__, #cond);                                    \
     }
 
-#  define ASSERT_NEAR(a, b, eps)                                                         \
-    {                                                                                    \
-      auto const a_eval = (a);                                                           \
-      auto const b_eval = (b);                                                           \
-      auto const diff_eval = a_eval < b_eval ? b_eval - a_eval : a_eval - b_eval;        \
-      if (diff_eval > (eps)) {                                                           \
-        juno::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                         \
-      }                                                                                  \
+#  define ASSERT_NEAR(a, b, eps)                                                        \
+    {                                                                                   \
+      auto const a_eval = (a);                                                          \
+      auto const b_eval = (b);                                                          \
+      auto const diff_eval = a_eval < b_eval ? b_eval - a_eval : a_eval - b_eval;       \
+      if (diff_eval > (eps)) {                                                          \
+        juno::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                       \
+      }                                                                                 \
     }
 
 #  define ASSERT_ASSUME(expr) ASSERT(expr)
