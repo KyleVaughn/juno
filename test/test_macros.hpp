@@ -90,12 +90,12 @@
     gpuError_t const sync_error = gpuDeviceSynchronize();                                \
     if (sync_error != gpuSuccess) {                                                      \
       Kokkos::printf("GPU error: %s\n", gpuGetErrorString(sync_error));                  \
-      Kokkos::abort();                                                                   \
+      Kokkos::abort("GPU error");                                                        \
     }                                                                                    \
     gpuError_t const error = gpuGetLastError();                                          \
     if (error != gpuSuccess) {                                                           \
       Kokkos::printf("GPU error: %s\n", gpuGetErrorString(error));                       \
-      Kokkos::abort();                                                                   \
+      Kokkos::abort("GPU error");                                                        \
     }
 
 #  define TEST_GPU_KERNEL_1_ARGS(host_test)                                              \
