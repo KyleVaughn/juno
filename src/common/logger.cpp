@@ -4,27 +4,27 @@
 #include <juno/common/settings.hpp>
 #include <juno/config.hpp>
 
-#include <algorithm>
-#include <cstdint>
-#include <cstdio>
-#include <memory>
+#include <algorithm>  // std::copy
+#include <cstdint>    // int32_t
+#include <cstdio>     // snprintf
+#include <memory>     // std::addressof
 #include <string>
 #include <string_view>
 
 namespace juno::logger
 {
 
-//==============================================================================
+//========================================================================================
 // Initialize global variables
-//==============================================================================
+//========================================================================================
 
 // Suppress warnings for non-const global variables, since this is a global
-// logger NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+// logger 
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 int32_t & level = juno::settings::logger::level;
 bool & timestamped = juno::settings::logger::timestamped;
 bool & colorized = juno::settings::logger::colorized;
-bool & exit_on_error = juno::settings::logger::exit_on_error;
 
 TimePoint start_time = Clock::now();
 char buffer[buffer_size] = {0};
@@ -32,9 +32,9 @@ char const * const buffer_end = buffer + buffer_size;
 
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
-//==============================================================================
+//========================================================================================
 // Functions
-//==============================================================================
+//========================================================================================
 
 void
 reset() noexcept
@@ -43,21 +43,17 @@ reset() noexcept
   level = juno::settings::logger::defaults::level;
   timestamped = juno::settings::logger::defaults::timestamped;
   colorized = juno::settings::logger::defaults::colorized;
-  exit_on_error = juno::settings::logger::defaults::exit_on_error;
 
   // Reset data
   start_time = Clock::now();
 }
 
-//==============================================================================
+//========================================================================================
 // toBuffer functions
-//==============================================================================
+//========================================================================================
 
-// When we don't use assertions, suppress warnings for unused variables
-// It's a catch-22, since what are we supposed to do when we aren't using
-// assertions, but the log function failed? We can't log it, since the log is
-// broken. So we just do nothing and hope for the best. The dangers of Release
-// mode.
+// When we don't use assertions, suppress warnings for unused variables, since the unused
+// variables for assertions
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 // NOLINTBEGIN(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
@@ -65,6 +61,7 @@ reset() noexcept
 namespace
 {
 
+//---------------------------------------------------------------------------------------
 auto
 appendStringViewToBuffer(char * buffer_pos, std::string_view const sv) noexcept -> char *
 {
@@ -76,6 +73,7 @@ appendStringViewToBuffer(char * buffer_pos, std::string_view const sv) noexcept 
 
 } // namespace
 
+//---------------------------------------------------------------------------------------
 // string
 template <>
 auto
@@ -86,6 +84,7 @@ toBuffer(char * buffer_pos, char const * const & value) noexcept -> char *
   return appendStringViewToBuffer(buffer_pos, sv);
 }
 
+//---------------------------------------------------------------------------------------
 // char
 template <>
 auto
@@ -97,6 +96,7 @@ toBuffer(char * buffer_pos, char const & value) noexcept -> char *
   return buffer_pos;
 }
 
+//---------------------------------------------------------------------------------------
 // Use snprintf to convert the value to a string and store it in the buffer
 template <>
 auto
@@ -110,6 +110,7 @@ toBuffer(char * buffer_pos, int32_t const & value) noexcept -> char *
   return buffer_pos + len;
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, int8_t const & value) noexcept -> char *
@@ -119,6 +120,7 @@ toBuffer(char * buffer_pos, int8_t const & value) noexcept -> char *
   return toBuffer(buffer_pos, val32);
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, uint32_t const & value) noexcept -> char *
@@ -131,6 +133,7 @@ toBuffer(char * buffer_pos, uint32_t const & value) noexcept -> char *
   return buffer_pos + len;
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, int64_t const & value) noexcept -> char *
@@ -143,6 +146,7 @@ toBuffer(char * buffer_pos, int64_t const & value) noexcept -> char *
   return buffer_pos + len;
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, uint64_t const & value) noexcept -> char *
@@ -155,6 +159,7 @@ toBuffer(char * buffer_pos, uint64_t const & value) noexcept -> char *
   return buffer_pos + len;
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, double const & value) noexcept -> char *
@@ -167,6 +172,7 @@ toBuffer(char * buffer_pos, double const & value) noexcept -> char *
   return buffer_pos + len;
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, float const & value) noexcept -> char *
@@ -176,6 +182,7 @@ toBuffer(char * buffer_pos, float const & value) noexcept -> char *
   return toBuffer(buffer_pos, dvalue);
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, bool const & value) noexcept -> char *
@@ -198,6 +205,7 @@ toBuffer(char * buffer_pos, bool const & value) noexcept -> char *
   return buffer_pos;
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, std::string_view const & value) noexcept -> char *
@@ -205,6 +213,7 @@ toBuffer(char * buffer_pos, std::string_view const & value) noexcept -> char *
   return appendStringViewToBuffer(buffer_pos, value);
 }
 
+//---------------------------------------------------------------------------------------
 template <>
 auto
 toBuffer(char * buffer_pos, std::string const & value) noexcept -> char *
@@ -216,8 +225,9 @@ toBuffer(char * buffer_pos, std::string const & value) noexcept -> char *
 // NOLINTEND(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
 #pragma GCC diagnostic pop
 
-//==============================================================================
+//=======================================================================================
 
+//---------------------------------------------------------------------------------------
 // Add the timestamp to the buffer if the log is timestamped
 auto
 addTimestamp(char * buffer_pos) noexcept -> char *
@@ -273,6 +283,7 @@ addTimestamp(char * buffer_pos) noexcept -> char *
   return buffer_pos;
 } // addTimestamp
 
+//---------------------------------------------------------------------------------------
 // Add the color to the buffer if the log is colorized
 auto
 addColor(int32_t const msg_level, char * buffer_pos) noexcept -> char *
@@ -311,6 +322,7 @@ addColor(int32_t const msg_level, char * buffer_pos) noexcept -> char *
   return buffer_pos;
 } // addColor
 
+//---------------------------------------------------------------------------------------
 // Add the level to the buffer
 auto
 addLevel(int32_t const msg_level, char * buffer_pos) noexcept -> char *
@@ -347,14 +359,6 @@ addLevel(int32_t const msg_level, char * buffer_pos) noexcept -> char *
     buffer_pos += 5;
     break;
   default:
-    buffer_pos[0] = 'U';
-    buffer_pos[1] = 'N';
-    buffer_pos[2] = 'K';
-    buffer_pos[3] = 'N';
-    buffer_pos[4] = 'O';
-    buffer_pos[5] = 'W';
-    buffer_pos[6] = 'N';
-    buffer_pos += 7;
     break;
   }
   buffer_pos[0] = ' ';
@@ -363,6 +367,7 @@ addLevel(int32_t const msg_level, char * buffer_pos) noexcept -> char *
   return buffer_pos + 3;
 } // addLevel
 
+//---------------------------------------------------------------------------------------
 // Set the preamble of the message
 auto
 setPreamble(int32_t const msg_level) noexcept -> char *
@@ -374,6 +379,7 @@ setPreamble(int32_t const msg_level) noexcept -> char *
   return buffer_pos;
 }
 
+//---------------------------------------------------------------------------------------
 // Set the postamble of the message
 void
 setPostamble(char * buffer_pos) noexcept

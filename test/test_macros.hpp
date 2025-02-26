@@ -1,6 +1,9 @@
 #pragma once
 
-// We want a test framework with assertions that:
+//========================================================================================
+// Testing Macros
+//========================================================================================
+// We want a testing framework with assertions that:
 // - Are active in both Debug and Release builds.
 // - Work for both host and device code.
 // - Work the same, regardless of JUNO_ENABLE_ASSERTS.
@@ -10,15 +13,20 @@
 // Hence, we mandate that all JUNO headers are included after this file so that
 // we can safely undef NDEBUG.
 //
-// Overview:
-// 1. Use TEST_CASE(name) to define a test case containing one or more 'ASSERT'
-// 2. Use MAKE_GPU_KERNEL(name) to create a GPU kernel from a test case,
-//    provided that the test case was declared with HOSTDEV.
-// 3. Use TEST_SUITE(name) to define a test suite containing one or more
-//    TEST(host_test) or TEST_GPU_KERNEL(host_test).
-//      - It is assumed MAKE_GPU_KERNEL(host_test) was called before
-//          TEST_GPU_KERNEL(host_test).
-// 4. Use RUN_TESTS(suite) to run a test suite in the main function.
+// Usage:
+// 1. TEST_CASE(name) 
+//      - to define a test case containing one or more "ASSERT"s
+// 2. MAKE_GPU_KERNEL(name)
+//      - to create a GPU kernel from a test case, provided that the test case was 
+//        declared with HOSTDEV. 
+//      - This creates a device kernel with "_gpu_kernel" appended to the host test name
+// 3. TEST_SUITE(name)
+//      - to define a test suite containing one or more TEST(host_test) or 
+//        TEST_GPU_KERNEL(host_test).
+//      - it is assumed that MAKE_GPU_KERNEL(host_test) was called before
+//        TEST_GPU_KERNEL(host_test).
+// 4. RUN_TESTS(suite) 
+//      - to run a test suite in the main function.
 //
 // Additional notes:
 // - TEST_HOSTDEV(name) is a shortcut for "TEST(name); TEST_GPU_KERNEL(name)".
@@ -28,8 +36,9 @@
 #endif
 
 #undef NDEBUG
-#include <Kokkos_Core.hpp> // abort, printf
-#include <cassert>
+#include <cassert> // assert
+#include <cstdio>  // printf    
+#include <cstdlib> // abort
 
 #undef ASSERT
 #undef ASSERT_NEAR
@@ -55,7 +64,7 @@
                                   : a_eval - b_eval <= eps_eval);                        \
   }
 
-// We don't care about putting the entire unit test file in an anonymous namespace
+// We don't want to put the entire unit test file in an anonymous namespace
 // NOLINTBEGIN(misc-use-anonymous-namespace)
 #define TEST_CASE(name) static void name()
 
@@ -63,6 +72,15 @@
 // NOLINTEND(misc-use-anonymous-namespace)
 
 #define TEST(name) name()
+
+#define RUN_SUITE(suite)                                                                 \
+  printf("Running test suite '%s'\n", #suite);                                           \
+  suite();                                                                               \
+  printf("Test suite '%s' passed\n", #suite);
+
+//========================================================================================
+// Macros for GPU
+//========================================================================================
 
 #if JUNO_USE_GPU
 
@@ -89,13 +107,13 @@
 #  define GPU_KERNEL_POST_TEST                                                           \
     gpuError_t const sync_error = gpuDeviceSynchronize();                                \
     if (sync_error != gpuSuccess) {                                                      \
-      Kokkos::printf("GPU error: %s\n", gpuGetErrorString(sync_error));                  \
-      Kokkos::abort("GPU error");                                                        \
+      printf("GPU error: %s\n", gpuGetErrorString(sync_error));                          \
+      abort();                                                                           \
     }                                                                                    \
     gpuError_t const error = gpuGetLastError();                                          \
     if (error != gpuSuccess) {                                                           \
-      Kokkos::printf("GPU error: %s\n", gpuGetErrorString(error));                       \
-      Kokkos::abort("GPU error");                                                        \
+      printf("GPU error: %s\n", gpuGetErrorString(error));                               \
+      abort();                                                                           \
     }
 
 #  define TEST_GPU_KERNEL_1_ARGS(host_test)                                              \
@@ -133,11 +151,6 @@
 #  define MAKE_GPU_KERNEL(...)
 #  define TEST_GPU_KERNEL(...)
 #endif // JUNO_USE_GPU
-
-#define RUN_SUITE(suite)                                                                 \
-  Kokkos::printf("Running test suite '%s'\n", #suite);                                   \
-  suite();                                                                               \
-  Kokkos::printf("Test suite '%s' passed\n", #suite);
 
 #define TEST_HOSTDEV_1_ARGS(host_test)                                                   \
   TEST(host_test);                                                                       \

@@ -12,15 +12,12 @@ TEST_CASE(loggerTest)
   ASSERT(juno::logger::level == juno::logger::levels::info);
   ASSERT(juno::logger::timestamped);
   ASSERT(juno::logger::colorized);
-  ASSERT(juno::logger::exit_on_error);
 
   // Test printing a string
-  juno::logger::exit_on_error = false;
   juno::logger::level = juno::logger::levels::debug;
   juno::logger::debug("debug");
   juno::logger::info("info");
   juno::logger::warn("warn");
-  juno::logger::error("error");
 
   // Test printing non-string types
   juno::logger::info(1111);

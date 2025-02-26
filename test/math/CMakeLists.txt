@@ -1,7 +1,0 @@
-juno_add_test(./morton.cpp)
-#juno_add_test(./stats.cpp)
-#juno_add_test(./vec.cpp)
-#juno_add_test(./mat.cpp)
-#juno_add_test(./quadratic_equation.cpp)
-#juno_add_test(./cubic_equation.cpp)
-#juno_add_test(./matrix.cpp)

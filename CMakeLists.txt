@@ -6,9 +6,9 @@ project(
   HOMEPAGE_URL "https://github.com/KyleVaughn/juno"
   LANGUAGES CXX)
 
-#===============================================================================
+#=========================================================================================
 # Contents
-#===============================================================================
+#=========================================================================================
 # 1. Options
 # 2. Basic CMake configuration
 # 3. Find dependencies
@@ -18,12 +18,12 @@ project(
 # 7. Build optional subdirectories
 # 8. Install
 
-#===============================================================================
+#=========================================================================================
 # Options
-#===============================================================================
+#=========================================================================================
 
 # Build
-#-------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
 
 # Build juno as a shared library (ON) or static library (OFF).
 option(JUNO_BUILD_SHARED_LIB "Build juno as a shared library" OFF)
@@ -32,11 +32,11 @@ option(JUNO_BUILD_SHARED_LIB "Build juno as a shared library" OFF)
 option(JUNO_BUILD_TESTS "Build tests" ON)
 
 # Features
-#------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 
-# Enable assertions. This option enables the JUNO_ASSERT*(condition) macros, 
-# which are evaluated regardless of the build type, unlike the standard assert 
-# macro which is only evaluated if NDEBUG is not defined.
+# Enable assertions. This option enables the JUNO_ASSERT*(condition) macros, which are 
+# evaluated regardless of the build type, unlike the standard assert macro which is only
+# evaluated if NDEBUG is not defined.
 option(JUNO_ENABLE_ASSERTS "Enable assertions" OFF)
 
 # Enable fast math optimizations.
@@ -47,10 +47,10 @@ option(JUNO_ENABLE_FASTMATH "Enable fast math optimizations" ON)
 option(JUNO_ENABLE_FLOAT64 "Enable 64-bit Float" OFF)
 
 # External tools/dependencies
-#-----------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 
-# Use clang-format for code formatting. This option enables the format-check
-# and format-fix targets, which check and fix the formatting of the code.
+# Use clang-format for code formatting. This option enables the format-check and 
+# format-fix targets, which check and fix the formatting of the code.
 option(JUNO_USE_CLANG_FORMAT "Use clang-format" ON)
 
 # Use clang-tidy for static analysis. Enable clang-tidy on all targets.
@@ -62,9 +62,9 @@ option(JUNO_USE_CUDA "Use CUDA" OFF)
 # Use HIP for GPU acceleration.
 option(JUNO_USE_HIP "Use HIP" OFF)
 
-#===============================================================================
+#=========================================================================================
 # Basic CMake configuration
-#===============================================================================
+#=========================================================================================
 
 # Set JUNO_USE_GPU if using HIP or CUDA
 if (JUNO_USE_HIP OR JUNO_USE_CUDA)
@@ -119,9 +119,9 @@ endif()
 
 include(GNUInstallDirs)
 
-#===============================================================================
+#=========================================================================================
 # Find dependencies
-#===============================================================================
+#=========================================================================================
 
 # Kokkos
 # Options for Kokkos are defined using -DKokkos_ENABLE_XYZ=ON/OFF
@@ -153,9 +153,9 @@ if (JUNO_USE_HIP)
   enable_language(HIP)
 endif()
 
-#===============================================================================
+#=========================================================================================
 # Flags
-#===============================================================================
+#=========================================================================================
 
 # If the compiler supports the flag, use it
 include(CheckCXXCompilerFlag)
@@ -225,7 +225,10 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -flto")
 
 # Sanitizers (debug only)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=memory,address,undefined -fno-omit-frame-pointer")
+string(CONCAT CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}"
+                                    " -g"
+                                    " -fsanitize=memory,address,undefined"
+                                    " -fno-omit-frame-pointer")
 
 # Enable OpenMP
 # Add flags here, so they are transferred to GPU language 
@@ -249,9 +252,9 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${LIBOMP_PATH}")
 endif()
 
-#===============================================================================
+#=========================================================================================
 # Create libjuno target
-#===============================================================================
+#=========================================================================================
 
 # Sources
 set(JUNO_SOURCES
@@ -291,9 +294,9 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
   "${PROJECT_SOURCE_DIR}/include/juno/config.hpp")
 
-#===============================================================================
+#=========================================================================================
 # Link/set properties for dependencies
-#===============================================================================
+#=========================================================================================
 
 # Kokkos
 target_link_libraries(juno PUBLIC Kokkos::kokkos)
@@ -303,6 +306,7 @@ target_include_directories(juno SYSTEM PUBLIC ${Kokkos_INCLUDE_DIRS})
 target_link_libraries(juno PUBLIC OpenMP::OpenMP_CXX)
 
 # clang-format
+#----------------------------------------------------------------------------------------
 if (JUNO_USE_CLANG_FORMAT)
   set(FORMAT_PATTERNS
     src/*.cpp
@@ -340,6 +344,7 @@ if (JUNO_USE_CLANG_FORMAT)
 endif()
 
 # clang-tidy
+#----------------------------------------------------------------------------------------
 if (JUNO_USE_CLANG_TIDY)
   # Macro for running clang-tidy on the given target
   macro(set_clang_tidy_properties TIDY_TARGET)
@@ -352,6 +357,7 @@ if (JUNO_USE_CLANG_TIDY)
 endif()
 
 # HIP
+#----------------------------------------------------------------------------------------
 if (JUNO_USE_HIP)
   # Set HIP standard to the same as the C++ standard
   set(JUNO_HIP_STANDARD ${CMAKE_CXX_STANDARD})
@@ -369,18 +375,18 @@ if (JUNO_USE_HIP)
   #  target_link_libraries(juno PUBLIC hip::device)
 endif()
 
-#===============================================================================
+#=========================================================================================
 # Build optional subdirectories
-#===============================================================================
+#=========================================================================================
 
 if (JUNO_BUILD_TESTS)
   include(CTest)
   add_subdirectory(test)
 endif()
 
-#===============================================================================
+#=========================================================================================
 # Install
-#===============================================================================
+#=========================================================================================
 
 install(TARGETS juno
         RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin

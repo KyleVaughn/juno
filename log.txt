@@ -1,14 +1,15 @@
-===============================================================================
+==========================================================================================
 Contents
-===============================================================================
+==========================================================================================
 1. Build
 2. Dependencies
 3. Flags
 4. Design
+5. Guidelines 
 
-===============================================================================
+==========================================================================================
 1. Build
-===============================================================================
+==========================================================================================
 
 CMake 
   - Use CMake as the build system. 
@@ -38,9 +39,9 @@ C++ standard
     - std::string_view/string::contains
     - std::mdspan (thanks Kokkos!)
 
-===============================================================================
+=========================================================================================
 2. Dependencies
-===============================================================================
+=========================================================================================
 
 clang-format
   - Use clang-format to enforce a consistent code style.
@@ -101,9 +102,9 @@ Kokkos
     compatability and correct configuration. Also because Kokkos doesn't take long to 
     build.
 
-===============================================================================
+=========================================================================================
 3. Flags
-===============================================================================
+=========================================================================================
 
 General warnings
   -Wall: The standard, bare minimum set of warnings.
@@ -164,9 +165,9 @@ Debug
     - undefined: An undefined behavior checker.
   -fno-omit-frame-pointer: Don't omit frame pointers for better stack traces.
 
-===============================================================================
+=========================================================================================
 4. Design
-===============================================================================
+=========================================================================================
 
 Design by contract (DBC, Assert/Assume)
   - We want to check that preconditions and postconditions to functions are enforced.
@@ -187,7 +188,6 @@ Logging
   - Use a logger to handle debug, info, warning, and error messages.
   - Use compile-time and run-time configuration to control logging behavior.
   - Colorize output when logging to a terminal to make it easier to read.
-  - Use the logger to exit the program when an error occurs (configurable).
 
 Precision of fundamental types
   - The precision of Float, Int, etc. should be configured at compile time.
@@ -218,3 +218,13 @@ Unit tests
 #libquadmath
 #gcov
 #replace valgrind with malt
+
+==========================================================================================
+5. Guidelines 
+==========================================================================================
+
+Global variables
+  - Use of globals should be minimized to aid performance and correctness
+  - If a variable is global and visible everywhere and "constexpr", make it
+    "inline constexpr" to ensure it has the same address in multiple translation
+    units
