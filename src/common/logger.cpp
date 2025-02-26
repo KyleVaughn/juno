@@ -4,10 +4,10 @@
 #include <juno/common/settings.hpp>
 #include <juno/config.hpp>
 
-#include <algorithm>  // std::copy
-#include <cstdint>    // int32_t
-#include <cstdio>     // snprintf
-#include <memory>     // std::addressof
+#include <algorithm> // std::copy
+#include <cstdint>   // int32_t
+#include <cstdio>    // snprintf
+#include <memory>    // std::addressof
 #include <string>
 #include <string_view>
 
@@ -19,7 +19,7 @@ namespace juno::logger
 //========================================================================================
 
 // Suppress warnings for non-const global variables, since this is a global
-// logger 
+// logger
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 int32_t & level = juno::settings::logger::level;

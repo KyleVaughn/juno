@@ -21,7 +21,7 @@
 //
 // Usage:
 // - LOG_DEBUG(args...): print a debug message that a developer would want to know
-// - LOG_INFO(args...):  print info that a user would want to know 
+// - LOG_INFO(args...):  print info that a user would want to know
 // - LOG_WARN(args...):  print a warning that something may go wrong
 // - LOG_ERROR(args...): print an error message that something has gone wrong
 
@@ -53,7 +53,7 @@ namespace juno::logger
 {
 
 //========================================================================================
-// Typedefs/constants 
+// Typedefs/constants
 //========================================================================================
 
 using Clock = std::chrono::system_clock;
@@ -106,7 +106,7 @@ void
 reset() noexcept;
 
 //========================================================================================
-// Implementation 
+// Implementation
 //========================================================================================
 
 namespace impl

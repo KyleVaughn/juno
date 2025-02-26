@@ -14,18 +14,18 @@
 // we can safely undef NDEBUG.
 //
 // Usage:
-// 1. TEST_CASE(name) 
+// 1. TEST_CASE(name)
 //      - to define a test case containing one or more "ASSERT"s
 // 2. MAKE_GPU_KERNEL(name)
-//      - to create a GPU kernel from a test case, provided that the test case was 
-//        declared with HOSTDEV. 
+//      - to create a GPU kernel from a test case, provided that the test case was
+//        declared with HOSTDEV.
 //      - This creates a device kernel with "_gpu_kernel" appended to the host test name
 // 3. TEST_SUITE(name)
-//      - to define a test suite containing one or more TEST(host_test) or 
+//      - to define a test suite containing one or more TEST(host_test) or
 //        TEST_GPU_KERNEL(host_test).
 //      - it is assumed that MAKE_GPU_KERNEL(host_test) was called before
 //        TEST_GPU_KERNEL(host_test).
-// 4. RUN_TESTS(suite) 
+// 4. RUN_TESTS(suite)
 //      - to run a test suite in the main function.
 //
 // Additional notes:
@@ -37,7 +37,7 @@
 
 #undef NDEBUG
 #include <cassert> // assert
-#include <cstdio>  // printf    
+#include <cstdio>  // printf
 #include <cstdlib> // abort
 
 #undef ASSERT
