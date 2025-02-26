@@ -73,6 +73,8 @@ appendStringViewToBuffer(char * buffer_pos, std::string_view const sv) noexcept 
 
 } // namespace
 
+namespace impl
+{
 //---------------------------------------------------------------------------------------
 // string
 template <>
@@ -397,5 +399,7 @@ setPostamble(char * buffer_pos) noexcept
   // Ensure null-terminated string
   buffer_pos[0] = '\0';
 }
+
+} // namespace impl
 
 } // namespace juno::logger

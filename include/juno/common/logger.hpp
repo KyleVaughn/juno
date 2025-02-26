@@ -109,6 +109,8 @@ reset() noexcept;
 // Implementation 
 //========================================================================================
 
+namespace impl
+{
 //----------------------------------------------------------------------------------------
 // Write types to the buffer
 // This is templated and can be specialized so that any type can be written
@@ -184,13 +186,15 @@ printMessage(int32_t const msg_level, Args const &... args) noexcept
   } // msg_level <= level
 } // printMessage
 
+} // namespace impl
+
 //----------------------------------------------------------------------------------------
 // Log an error message
 template <class... Args>
 void
 error(Args const &... args) noexcept
 {
-  printMessage(levels::error, args...);
+  impl::printMessage(levels::error, args...);
 }
 
 //----------------------------------------------------------------------------------------
@@ -199,7 +203,7 @@ template <class... Args>
 void
 warn(Args const &... args) noexcept
 {
-  printMessage(levels::warn, args...);
+  impl::printMessage(levels::warn, args...);
 }
 
 //----------------------------------------------------------------------------------------
@@ -208,7 +212,7 @@ template <class... Args>
 void
 info(Args const &... args) noexcept
 {
-  printMessage(levels::info, args...);
+  impl::printMessage(levels::info, args...);
 }
 
 //----------------------------------------------------------------------------------------
@@ -217,7 +221,7 @@ template <class... Args>
 void
 debug(Args const &... args) noexcept
 {
-  printMessage(levels::debug, args...);
+  impl::printMessage(levels::debug, args...);
 }
 
 } // namespace juno::logger
