@@ -1,0 +1,7 @@
+modules:
+  default:
+    tcl:
+      include: ['neovim', 'llvm', 'py-fortls', 'ripgrep', 'fd', 'gcc', 'kokkos']
+      exclude: ['glibc', 'gcc-runtime']
+      all:
+        autoload: 'direct'

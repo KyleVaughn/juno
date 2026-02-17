@@ -1,0 +1,20 @@
+spack:
+  concretizer:
+    targets:
+      granularity: generic
+    unify: true
+  include:
+  - config.yaml
+  - modules.yaml
+  specs:
+  - llvm@21 ~libomptarget ~lldb ~gold ~offload ~polly target=x86_64
+  - neovim
+  - py-fortls
+  - fd@10.3
+  - ripgrep@15.1
+  - gcc@13.4
+  - kokkos@5.0
+  view: false
+  repos:
+    builtin:
+      destination: /home/kcvaughn/Desktop/juno/spack/spack-packages
